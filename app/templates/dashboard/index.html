@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Find Stock{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="ticker_symbol">Ticker Symbol:</label>
+    <input
+      name="ticker_symbol"
+      id="ticker_symbol"
+      required
+      maxLength="20"
+      placeholder="msft"
+      pattern="[a-zA-Z0-9]+"
+      autocomplete="off"
+    >
+    <input type="submit" value="Find">
+  </form>
+{% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Download Stock{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <img src="{{ details['logo_url'] }}" style="width:100px;margin-top:16px" />
+  <h1>{{ details['name'] }} ({{ details['symbol'] }})</h1>
+  <a href="{{ details['web_url'] }}" target="_blank" rel="noopener noreferrer">
+    {{ details['web_url'] }}
+  </a>
+  <div>
+  <div style="width:300px;">
+    <p>{{ date_and_time }}</p>
+    <p>
+      Opening Price: <b style="float:right">{{ details['open_price'] }}</b>
+    </p>
+    <p>Market Cap: <b style="float:right">{{ details['market_cap'] }}</b></p>
+    <p>Industry: <b style="float:right">{{ details['industry'] }}</b></p>
+  </div>
+  <p>{{ details['description'] }}</p>
+{% endblock %}
