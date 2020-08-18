@@ -11,13 +11,33 @@
     {{ details['web_url'] }}
   </a>
   <div>
-  <div style="width:300px;">
-    <p>{{ date_and_time }}</p>
-    <p>
-      Opening Price: <b style="float:right">{{ details['open_price'] }}</b>
+  <div style="margin-bottom:4rem;">
+    <div style="width:300px;">
+      <p>{{ date_and_time }}</p>
+      <p>
+        Opening Price: <b style="float:right">{{ details['open_price'] }}</b>
+      </p>
+      <p>Market Cap: <b style="float:right">{{ details['market_cap'] }}</b></p>
+      <p>Industry: <b style="float:right">{{ details['industry'] }}</b></p>
+    </div>
+    <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+      {{ details['description'] }}
     </p>
-    <p>Market Cap: <b style="float:right">{{ details['market_cap'] }}</b></p>
-    <p>Industry: <b style="float:right">{{ details['industry'] }}</b></p>
   </div>
-  <p>{{ details['description'] }}</p>
+  <form method="post">
+    <label for="period">Data Period:</label>
+    <select name="period" id="period">
+      {% for option in period_options %}
+        <option value="{{option[0]}}">{{option[1]}}</option>
+      {% endfor %}
+    </select>
+    <label for"interval">Data Interval:</label>
+    <select name="interval" id="interval">
+      {% for option in interval_options %}
+        <option value="{{option[0]}}">{{option[1]}}</option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="ticker" id="ticker" value="{{ ticker_symbol }}">
+    <input type="submit" value="Download">
+  </form>
 {% endblock %}

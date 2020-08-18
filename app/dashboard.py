@@ -1,9 +1,11 @@
 from datetime import datetime
 
+import tempfile
+
 import humanize
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for, send_file
 )
 
 import yfinance as yf
@@ -38,11 +40,11 @@ def index():
     return render_template('dashboard/index.html')
 
 
-@bp.route('/download', methods=('GET', 'POST'))
+@bp.route('/info')
 @login_required
-def download():
+def info():
     date_and_time = datetime.now().strftime('%B %-d, %Y at %-I:%M %p')
-    ticker_symbol = request.args.get('ticker_symbol')
+    ticker_symbol = request.args.get('ticker_symbol').upper()
     yf_ticker = yf.Ticker(ticker_symbol)
     ticker_info = yf_ticker.info
     details = {
@@ -57,21 +59,59 @@ def download():
         else humanize.intcomma(ticker_info['marketCap']),
         'open_price': humanize.intcomma(ticker_info['open']),
     }
-    if request.method == 'POST':
-        period = request.form['period']
-        interval = request.form['interval']  # only allow 1d, 5d, 1wk,1mo, 3mo
-        ticker_history = yf_ticker.history(period=period, interval=interval)
-        # TODO use send_file() for downloads
-        # TODO remove files from disk after download completion
-        # TODO validation
-        log_activity(
-            g.user['username'],
-            f'download, {ticker_symbol}, {period}, {interval}')
+    period_options = (
+        ('1mo', '1 month'),
+        ('3mo', '3 months'),
+        ('6mo', '6 months'),
+        ('1y', '1 year'),
+        ('2y', '2 years'),
+        ('5y', '5 years'),
+        ('10y', '10 years'),
+        ('ytd', 'Year to Date'),
+        ('max', 'Max'),
+    )
+    interval_options = (
+        ('1d', '1 day'),
+        ('5d', '5 days'),
+        ('1wk', '1 week'),
+        ('1mo', '1 month'),
+        ('3mo', '3 months'),
+    )
 
     return render_template(
         'dashboard/download.html',
+        ticker_symbol=ticker_symbol,
         date_and_time=date_and_time,
-        details=details)
+        details=details,
+        period_options=period_options,
+        interval_options=interval_options)
+
+
+@bp.route('/download', methods=('POST'))
+@login_required
+def download():
+    if request.method == 'POST':
+        ticker_symbol = request.form['ticker'].upper()
+        yf_ticker = yf.Ticker(ticker_symbol)
+        period = request.form['period']
+        interval = request.form['interval']
+        ticker_history = yf_ticker.history(
+            period=period, interval=interval)
+
+        log_activity(
+            g.user['username'],
+            f'download, '
+            f'ticker: {ticker_symbol}, '
+            f'period: {period}, '
+            f'interval: {interval}')
+
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H%M%S')
+        filename = f'stock_data__{ticker_symbol}__{timestamp}.csv'
+        with tempfile.NamedTemporaryFile() as file:
+            ticker_history.to_csv(file.name)  # write to tempfile in csv format
+            return send_file(
+                file.name, mimetype='text/csv', as_attachment=True,
+                attachment_filename=filename)
 
 
 def log_activity(username, details):
