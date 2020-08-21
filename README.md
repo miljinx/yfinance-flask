@@ -1,3 +1,3 @@
 # yfinance-flask
 
-Deploy on a VPS to easily download CSV's of stock data.
+A simple Flask application that uses [yfinance](https://github.com/ranaroussi/yfinance) to serve stock data.
