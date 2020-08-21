@@ -87,7 +87,7 @@ def info():
         interval_options=interval_options)
 
 
-@bp.route('/download', methods=('POST'))
+@bp.route('/download', methods=('POST',))
 @login_required
 def download():
     if request.method == 'POST':

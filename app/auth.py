@@ -10,15 +10,19 @@ from app.db import get_db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+MAX_USERS = 4
+
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
-    # TODO limit registrations
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         db = get_db()
         error = None
+
+        if max_users_reached():
+            error = 'User registrations are disabled at this time.'
 
         if not username:
             error = 'Username is required.'
@@ -39,7 +43,8 @@ def register():
 
         flash(error)
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html',
+                           max_users_reached=max_users_reached())
 
 
 @bp.route('/login', methods=('GET', 'POST'))
@@ -95,3 +100,8 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+def max_users_reached():
+    return MAX_USERS <= get_db().execute(
+        'SELECT COUNT(id) FROM users').fetchone()[0]
