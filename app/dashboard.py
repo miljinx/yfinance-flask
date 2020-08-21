@@ -90,28 +90,28 @@ def info():
 @bp.route('/download', methods=('POST',))
 @login_required
 def download():
-    if request.method == 'POST':
-        ticker_symbol = request.form['ticker'].upper()
-        yf_ticker = yf.Ticker(ticker_symbol)
-        period = request.form['period']
-        interval = request.form['interval']
-        ticker_history = yf_ticker.history(
-            period=period, interval=interval)
+    # TODO simple rate-limiting
+    ticker_symbol = request.form['ticker'].upper()
+    yf_ticker = yf.Ticker(ticker_symbol)
+    period = request.form['period']
+    interval = request.form['interval']
+    ticker_history = yf_ticker.history(
+        period=period, interval=interval)
 
-        log_activity(
-            g.user['username'],
-            f'download, '
-            f'ticker: {ticker_symbol}, '
-            f'period: {period}, '
-            f'interval: {interval}')
+    log_activity(
+        g.user['username'],
+        f'download, '
+        f'ticker: {ticker_symbol}, '
+        f'period: {period}, '
+        f'interval: {interval}')
 
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H%M%S')
-        filename = f'stock_data__{ticker_symbol}__{timestamp}.csv'
-        with tempfile.NamedTemporaryFile() as file:
-            ticker_history.to_csv(file.name)  # write to tempfile in csv format
-            return send_file(
-                file.name, mimetype='text/csv', as_attachment=True,
-                attachment_filename=filename)
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H%M%S')
+    filename = f'stock_data__{ticker_symbol}__{timestamp}.csv'
+    with tempfile.NamedTemporaryFile() as file:
+        ticker_history.to_csv(file.name)  # write to tempfile in csv format
+        return send_file(
+            file.name, mimetype='text/csv', as_attachment=True,
+            attachment_filename=filename)
 
 
 def log_activity(username, details):
