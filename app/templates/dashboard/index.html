@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-  <form method="post">
+  <form method="post" id="find-form">
     <label for="ticker_symbol">Ticker Symbol:</label>
     <input
       name="ticker_symbol"
@@ -16,7 +16,7 @@
       pattern="[a-zA-Z0-9]+"
       autocomplete="off"
     >
-    <input type="submit" value="Find">
+    <input type="submit" value="Find" id="find">
   </form>
 {% endblock %}
 

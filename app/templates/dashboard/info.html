@@ -24,7 +24,7 @@
       {{ details['description'] }}
     </p>
   </div>
-  <form action="download" method="post">
+  <form action="download" method="post" id="download-form">
     <label for="period">Data Period:</label>
     <select name="period" id="period">
       {% for option in period_options %}
@@ -38,6 +38,6 @@
       {% endfor %}
     </select>
     <input type="hidden" name="ticker" id="ticker" value="{{ ticker_symbol }}">
-    <input type="submit" value="Download">
+    <input type="submit" value="Download" id="download">
   </form>
 {% endblock %}

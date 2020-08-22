@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <title>{% block title %}{% endblock %} - YFinFlask</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
@@ -22,3 +22,4 @@
   {% endfor %}
   {% block content %}{% endblock %}
 </section>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
