@@ -72,7 +72,7 @@ def index():
 @bp.route('/info')
 @login_required
 def info():
-    date_and_time = datetime.now().strftime('%B %-d, %Y at %-I:%M %p')
+    date_of_search = datetime.now().strftime('%B %-d, %Y')
     ticker_symbol = request.args.get('ticker_symbol').upper()
     # TODO cache ticker_info
     yf_ticker = yf.Ticker(ticker_symbol)
@@ -93,7 +93,7 @@ def info():
     return render_template(
         'dashboard/info.html',
         ticker_symbol=ticker_symbol,
-        date_and_time=date_and_time,
+        date_of_search=date_of_search,
         details=details,
         period_options=PERIOD_OPTIONS,
         interval_options=INTERVAL_OPTIONS)
@@ -108,8 +108,6 @@ def download():
         seconds_since_last_download = int(
             (datetime.now() - session['last_download_at']).total_seconds())
         if seconds_since_last_download < DOWNLOAD_INTERVAL_SECONDS:
-            # clear flashes to handle case where user spams the download button
-            get_flashed_messages()
             flash(
                 f'Please wait {seconds_since_last_download} seconds '
                 f'before downloading again.')
