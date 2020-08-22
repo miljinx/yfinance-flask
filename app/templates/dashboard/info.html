@@ -24,7 +24,7 @@
       {{ details['description'] }}
     </p>
   </div>
-  <form method="post">
+  <form action="download" method="post">
     <label for="period">Data Period:</label>
     <select name="period" id="period">
       {% for option in period_options %}

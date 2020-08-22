@@ -5,8 +5,16 @@ import tempfile
 import humanize
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, send_file
-)
+    Blueprint,
+    flash,
+    get_flashed_messages,
+    g,
+    session,
+    redirect,
+    render_template,
+    request,
+    url_for,
+    send_file)
 
 import yfinance as yf
 
@@ -15,6 +23,27 @@ from app.db import get_db
 
 bp = Blueprint('dashboard', __name__)
 
+DOWNLOAD_INTERVAL_SECONDS = 10
+
+PERIOD_OPTIONS = (
+    ('1mo', '1 month'),
+    ('3mo', '3 months'),
+    ('6mo', '6 months'),
+    ('1y', '1 year'),
+    ('2y', '2 years'),
+    ('5y', '5 years'),
+    ('10y', '10 years'),
+    ('ytd', 'Year to Date'),
+    ('max', 'Max'),
+)
+
+INTERVAL_OPTIONS = (
+    ('1d', '1 day'),
+    ('5d', '5 days'),
+    ('1wk', '1 week'),
+    ('1mo', '1 month'),
+    ('3mo', '3 months'),
+)
 
 @bp.route('/', methods=('GET', 'POST'))
 @login_required
@@ -34,7 +63,7 @@ def index():
         if retrieved_ticker_symbol:
             return redirect(
                 url_for(
-                    'dashboard.download',
+                    'dashboard.info',
                     ticker_symbol=retrieved_ticker_symbol))
 
     return render_template('dashboard/index.html')
@@ -45,6 +74,7 @@ def index():
 def info():
     date_and_time = datetime.now().strftime('%B %-d, %Y at %-I:%M %p')
     ticker_symbol = request.args.get('ticker_symbol').upper()
+    # TODO cache ticker_info
     yf_ticker = yf.Ticker(ticker_symbol)
     ticker_info = yf_ticker.info
     details = {
@@ -59,45 +89,38 @@ def info():
         else humanize.intcomma(ticker_info['marketCap']),
         'open_price': humanize.intcomma(ticker_info['open']),
     }
-    period_options = (
-        ('1mo', '1 month'),
-        ('3mo', '3 months'),
-        ('6mo', '6 months'),
-        ('1y', '1 year'),
-        ('2y', '2 years'),
-        ('5y', '5 years'),
-        ('10y', '10 years'),
-        ('ytd', 'Year to Date'),
-        ('max', 'Max'),
-    )
-    interval_options = (
-        ('1d', '1 day'),
-        ('5d', '5 days'),
-        ('1wk', '1 week'),
-        ('1mo', '1 month'),
-        ('3mo', '3 months'),
-    )
 
     return render_template(
         'dashboard/info.html',
         ticker_symbol=ticker_symbol,
         date_and_time=date_and_time,
         details=details,
-        period_options=period_options,
-        interval_options=interval_options)
+        period_options=PERIOD_OPTIONS,
+        interval_options=INTERVAL_OPTIONS)
 
 
 @bp.route('/download', methods=('POST',))
 @login_required
 def download():
-    # TODO simple rate-limiting
     ticker_symbol = request.form['ticker'].upper()
+
+    if 'last_download_at' in session:
+        seconds_since_last_download = int(
+            (datetime.now() - session['last_download_at']).total_seconds())
+        if seconds_since_last_download < DOWNLOAD_INTERVAL_SECONDS:
+            # clear flashes to handle case where user spams the download button
+            get_flashed_messages()
+            flash(
+                f'Please wait {seconds_since_last_download} seconds '
+                f'before downloading again.')
+            return redirect(url_for('dashboard.info', ticker_symbol=ticker_symbol))
+
     yf_ticker = yf.Ticker(ticker_symbol)
     period = request.form['period']
     interval = request.form['interval']
-    ticker_history = yf_ticker.history(
-        period=period, interval=interval)
+    ticker_history = yf_ticker.history(period=period, interval=interval)
 
+    session['last_download_at'] = datetime.now()
     log_activity(
         g.user['username'],
         f'download, '
