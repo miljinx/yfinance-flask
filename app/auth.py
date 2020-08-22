@@ -15,7 +15,6 @@ MAX_USERS = 4
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
-    # TODO validate username length and character types
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']

@@ -79,7 +79,7 @@ def info():
     )
 
     return render_template(
-        'dashboard/download.html',
+        'dashboard/info.html',
         ticker_symbol=ticker_symbol,
         date_and_time=date_and_time,
         details=details,
