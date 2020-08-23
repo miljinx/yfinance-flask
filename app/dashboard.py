@@ -18,9 +18,6 @@ from flask import (
 
 import yfinance as yf
 
-from app.auth import login_required
-from app.db import get_db
-
 bp = Blueprint('dashboard', __name__)
 
 DOWNLOAD_INTERVAL_SECONDS = 10
@@ -46,13 +43,9 @@ INTERVAL_OPTIONS = (
 )
 
 @bp.route('/', methods=('GET', 'POST'))
-@login_required
 def index():
     if request.method == 'POST':
         ticker_symbol = request.form['ticker_symbol']
-        log_activity(
-            g.user['username'],
-            f'search, {ticker_symbol}')
         retrieved_ticker_symbol = None
         try:
             yf_ticker = yf.Ticker(ticker_symbol)
@@ -70,7 +63,6 @@ def index():
 
 
 @bp.route('/info')
-@login_required
 def info():
     date_of_search = datetime.now().strftime('%B %-d, %Y')
     ticker_symbol = request.args.get('ticker_symbol').upper()
@@ -100,7 +92,6 @@ def info():
 
 
 @bp.route('/download', methods=('POST',))
-@login_required
 def download():
     ticker_symbol = request.form['ticker'].upper()
 
@@ -119,12 +110,6 @@ def download():
     ticker_history = yf_ticker.history(period=period, interval=interval)
 
     session['last_download_at'] = datetime.now()
-    log_activity(
-        g.user['username'],
-        f'download, '
-        f'ticker: {ticker_symbol}, '
-        f'period: {period}, '
-        f'interval: {interval}')
 
     timestamp = datetime.now().strftime('%Y-%m-%d_%H%M%S')
     filename = f'stock_data__{ticker_symbol}__{timestamp}.csv'
@@ -133,12 +118,3 @@ def download():
         return send_file(
             file.name, mimetype='text/csv', as_attachment=True,
             attachment_filename=filename)
-
-
-def log_activity(username, details):
-    db = get_db()
-    db.execute(
-        'INSERT INTO logs(details, timestamp) VALUES (?,?)',
-        (f'{username}, {details}',
-         datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-    db.commit()
