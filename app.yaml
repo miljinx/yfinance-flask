@@ -1,1 +1,4 @@
 runtime: python38
+max_instances: 1
+automatic_scaling:
+   max_instances: 1
