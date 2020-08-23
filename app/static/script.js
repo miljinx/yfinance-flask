@@ -5,6 +5,7 @@ window.addEventListener('DOMContentLoaded', function(event) {
 
 function handleClickFind() {
   var form = document.getElementById("find-form");
+  if (form === null) return;
   form.addEventListener("submit", function() {
     var submitBtn = document.getElementById("find");
     submitBtn.setAttribute("disabled", "");
@@ -16,6 +17,7 @@ function handleClickFind() {
 // see https://blog.logrocket.com/programmatic-file-downloads-in-the-browser-9a5186298d5c/
 function handleClickDownload() {
   var form = document.getElementById("download-form");
+  if (form === null) return;
   var submitTimeout = 10;
   form.addEventListener("submit", function() {
     var submitBtn = document.getElementById("download");
